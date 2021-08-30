@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+          integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <title>Todo</title>
+    <style>
+        html, body {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            font-family: Calibri;
+            color: white;
+        }
+
+        .todo {
+            height: 100%;
+            overflow-x: auto;
+            background: darkslateblue;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .todo .todo-canvas {
+            margin: 1rem;
+            width: 300px;
+        }
+
+        .todo .todo-list {
+            background: slateblue;
+            border-radius: 5px;
+            padding: 1rem;
+        }
+
+        .todo .todo-header {
+            padding: 1rem;
+            display: flex;
+            align-items: end;
+        }
+
+        .todo .todo-button {
+            cursor: pointer;
+
+            color: white;
+            width: 50px;
+            height: 50px;
+            font-size: 2rem;
+            border-radius: 50%;
+            border: 0;
+            -webkit-box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.75);
+            -moz-box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.75);
+            box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.75);
+        }
+
+        .todo .todo-button:hover {
+            -webkit-box-shadow: 4px 4px 10px 0px rgba(0,0,0,0.75);
+            -moz-box-shadow: 4px 4px 10px 0px rgba(0,0,0,0.75);
+            box-shadow: 4px 4px 10px 0px rgba(0,0,0,0.75);
+        }
+
+        .todo .todo-button.todo-button-add {
+            background: blue;
+
+        }
+
+        .todo .todo-button.todo-button-add:hover {
+            background: mediumblue;
+        }
+
+        .todo .todo-card {
+            display: flex;
+            flex-direction: column;
+
+            padding: 1rem;
+            margin: 1rem 0;
+
+            border-radius: 5px;
+            -webkit-box-shadow: 1px 1px 10px 0px rgba(0,0,0,0.75);
+            -moz-box-shadow: 1px 1px 10px 0px rgba(0,0,0,0.75);
+            box-shadow: 1px 1px 10px 0px rgba(0,0,0,0.75);
+        }
+
+        .todo .todo-card .label,
+        .todo .todo-card .save {
+            width: 100%;
+        }
+
+        .todo .todo-card .label,
+        .todo .todo-card .content,
+        .todo .todo-card .save {
+            font-size: 1rem;
+            margin: .5rem 0;
+            padding: .25rem 0;
+        }
+        .todo-list-text{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 30%;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ed Todo list</h1>
+</header>
+<div class="todo">
+    <div class="todo-canvas">
+
+        <div class="todo-header">
+            <button class="todo-button todo-button-add" id="todo-button-add" type="reset">+</button>
+        </div>
+        <div class="todo-list">
+            <div class="todo-card" id="card-1">
+                <label class="label">Content</label>
+                <input class="content" type="text" placeholder="add tasks"/>
+                <ul class="todo-list-text"></ul>
+            </div>
+        </div>
+
+
+
+    </div>
+
+</div>
+</body>
+<script>
+    const input = document.querySelector('.content');
+    const btn = document.querySelector('.todo-button-add');
+    const list = document.querySelector('.todo-list');
+
+    btn.addEventListener('click', addTodo);
+    list.addEventListener('click', deleteCheck);
+    document.addEventListener('DOMContentLoaded', getTodos);
+
+    function addTodo(event) {
+        event.preventDefault();
+        const todoDiv = document.createElement("div");
+        todoDiv.classList.add("todo");
+
+        const newTodo = document.createElement('li');
+        newTodo.innerText = input.value;
+        newTodo.classList.add('todo-item');
+        todoDiv.appendChild(newTodo);
+
+        saveLocalTodo(input.value);
+
+        const completedButton = document.createElement('button');
+        completedButton.innerHTML = '<i class="fas fa-check"></i>';
+        completedButton.classList.add("complete-btn");
+        todoDiv.appendChild(completedButton);
+
+        const trashButton = document.createElement('button');
+        trashButton.innerHTML = '<i class="fas fa-trash"></i>';
+        trashButton.classList.add("trash-btn");
+        todoDiv.appendChild(trashButton);
+
+        list.appendChild(todoDiv);
+        input.value = "";
+
+
+    }
+
+    function deleteCheck(e) {
+        const item = e.target;
+        if (item.classList[0] == 'trash-btn') {
+            const todo = item.parentElement;
+            todo.classList.add('fall');
+            removeLocalTodos(todo);
+            todo.remove();
+        }
+
+        if (item.classList[0] === "complete-btn") {
+            const todo = item.parentElement;
+            todo.classList.toggle("completed");
+        }
+    }
+
+    function saveLocalTodo(todo) {
+        let todos;
+        if (localStorage.getItem("todos") === null) {
+            todos = [];
+        } else {
+            todos = JSON.parse(localStorage.getItem("todos"))
+        }
+        todos.push(todo);
+        localStorage.setItem('todos', JSON.stringify(todos))
+    }
+
+    function getTodos() {
+        let todos;
+        if (localStorage.getItem("todos") === null) {
+            todos = [];
+        } else {
+            todos = JSON.parse(localStorage.getItem("todos"))
+        }
+        todos.forEach(function (todo) {
+            const todoDiv = document.createElement("div");
+            todoDiv.classList.add("todo");
+
+            const newTodo = document.createElement('li');
+            newTodo.innerText = todo;
+            newTodo.classList.add('todo-item');
+            todoDiv.appendChild(newTodo);
+            const completedButton = document.createElement('button');
+            completedButton.innerHTML = '<i class="fas fa-check"></i>';
+            completedButton.classList.add("complete-btn");
+            todoDiv.appendChild(completedButton);
+
+            const trashButton = document.createElement('button');
+            trashButton.innerHTML = '<i class="fas fa-trash"></i>';
+            trashButton.classList.add("trash-btn");
+            todoDiv.appendChild(trashButton);
+
+            list.appendChild(todoDiv);
+        })
+
+    }
+
+    function removeLocalTodos(todo) {
+        let todos;
+        if (localStorage.getItem("todos") === null) {
+            todos = [];
+        } else {
+            todos = JSON.parse(localStorage.getItem("todos"))
+        }
+        const todoIndex = todo.children[0].innerText;
+        todos.splice(todos.indexOf(todoIndex), 1);
+        localStorage.setItem("todos", JSON.stringify(todos));
+    }
+
+
+</script>
+</html>
